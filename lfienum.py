@@ -368,11 +368,11 @@ windows_lfi_wordlist=['C:/Users/Administrator/NTUser.dat',
 def lfi_check_linux():
 	# need accurate?
 	# any false positive?
-	if 'HW type' in clean_content or ':0:0:' in clean_content or '/bin/sh' in clean_content or 'apache' in clean_content or 'cron' in clean_content or 'fstab' in clean_content or 'localhost' in clean_content or 'hosts' in clean_content or '127.' in clean_content or 'GNU' in clean_content or 'Linux' in clean_content or 'kernel' in clean_content or '/dev/' in clean_content or 'mysql' in clean_content or 'dir' in clean_content or 'network' in clean_content or 'interface' in clean_content or '0.0.0.0' in clean_content or 'bash' in clean_content or 'nameserver' in clean_content or 'configuration' in clean_content or 'ssh' in clean_content or 'sshd' in clean_content or 'samba' in clean_content or 'cpu' in clean_content or 'core' in clean_content or 'sysfs' in clean_content or 'check' in clean_content or 'CPU' in clean_content or 'Bus' in clean_content or 'Active' in clean_content or 'Mapped' in clean_content or 'Live' in clean_content or 'config' in clean_content or 'version' in clean_content or 'Device' in clean_content or 'dpkg' in clean_content or 'startup' in clean_content or 'status' in clean_content or 'install' in clean_content or 'tty' in clean_content:
+	if 'HW type' in clean_content or ':0:0:' in clean_content or '/bin/sh' in clean_content or 'sshd' in clean_content or 'apache' in clean_content or 'cron' in clean_content or 'fstab' in clean_content or 'localhost' in clean_content or 'hosts' in clean_content or '127.' in clean_content or 'GNU' in clean_content or 'Linux' in clean_content or 'kernel' in clean_content or '/dev/' in clean_content or 'mysql' in clean_content or 'dir' in clean_content or 'network' in clean_content or 'interface' in clean_content or '0.0.0.0' in clean_content or 'bash' in clean_content or 'nameserver' in clean_content or 'configuration' in clean_content or 'ssh' in clean_content or 'sshd' in clean_content or 'samba' in clean_content or 'cpu' in clean_content or 'core' in clean_content or 'sysfs' in clean_content or 'check' in clean_content or 'CPU' in clean_content or 'Bus' in clean_content or 'Active' in clean_content or 'Mapped' in clean_content or 'Live' in clean_content or 'config' in clean_content or 'version' in clean_content or 'Device' in clean_content or 'dpkg' in clean_content or 'startup' in clean_content or 'status' in clean_content or 'install' in clean_content or 'tty' in clean_content:
 		# quick fix for google response junk data
-		if '404.' and 'error' not in clean_content:
-			print ("[\033[32m+\033[0m] [\033[32mLFI VULNERABLE\033[0m] " + url + possible_lfi_file)
-			print (clean_content)
+#		if '404.' and 'error' not in clean_content:
+		print ("[\033[32m+\033[0m] [\033[32mLFI VULNERABLE\033[0m] " + url + possible_lfi_file)
+		print (clean_content)
 
 def lfi_check_windows():
 
