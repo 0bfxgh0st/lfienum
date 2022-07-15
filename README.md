@@ -1,2 +1,2 @@
 Local File Inclusion Enumeration (PoC)  
-Use it when you know url is vulnerable to LFI.  
+Recomended usage when you know target url parameter is vulnerable to LFI.  
