@@ -5,7 +5,7 @@ Almost whole system enumeration when target is vulnerable to LFI.
 ```
 lfiǝnum ~by 0bfxgh0st*
 
-Usage python3 lfienum <url>
+Usage python3 lfienum <url> <option>
 
 Options:
 
