@@ -24,7 +24,7 @@ Examples:
 
 Auto id_rsa key extraction from /etc/passwd, check `def IdRSA():` function  
 Output example:  
-```zsh
+```
 ...
 
 > ghost id_rsa private key
