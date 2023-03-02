@@ -1214,6 +1214,14 @@ def XCF():                  # this function aims to print all text between tags 
 #	for i in soup.find_all(["p"]):
 #		clean_content = i.text
 
+#def XCF():                  # this function aims to delete all content between <html> & </html> tags and will print text after </html> tag with the objective to get last losing text 
+	
+#	global clean_content
+#	soup = BeautifulSoup(resp.content, 'html.parser')
+#	for i in soup.find_all('html'):
+#		i.decompose()   # same as i.replaceWith('')
+#	clean_content = soup.get_text().strip()
+	
 def PackageStatus():
 
 	print ('[Response Code]:', resp.status_code)
