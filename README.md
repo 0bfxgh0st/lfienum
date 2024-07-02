@@ -14,19 +14,20 @@ Options:
     --pid &ltn>                     Show single process id
     --fd &ltn>                      Bruteforce file descriptors from 0 to &ltn> (/proc/self/fd/&ltn>) [default is set to 30]
     --wrapper &ltfile>              Extract/decode hidden file using a wrapper (php://filter/convert.base64-encode/resource=)
-    -w or --wordlist &ltwordlist>   Use a custom wordlist
-    -k or --key                   Extract id_rsa key
+    -w,  --wordlist &ltwordlist>    Use a custom wordlist
+    -k,  --key                    Extract id_rsa key
 
-    -h or --help                  Show help panel
-    -ah or --advanced-help        Show advanced help panel
+    -h,  --help                   Show help panel
+    -ah, --advanced-help          Show advanced help panel
 
-    -vvv                          Show package info
-    --only-url                    Dump urls only
+    -v,  -vvv                     Show package info
+    -ou, --only-url               Dump urls only
 
     -x1                           Use XCF_A function print all text between tags (default)
     -x2                           Use XCF_B function print all text that isn't between any tag
     -x3                           Use XCF_C function print content between specific tag
     -x4                           Use XCF_D function delete all content inside &lthtml> and &lt/html> tags
+    --exclude &ltstring>            Exclude responses that contains given string
 
 Enumeration modes:
 
