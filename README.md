@@ -3,7 +3,7 @@ Local File Inclusion Enumeration (PoC)
 Almost whole system enumeration when target is vulnerable to LFI.  
 
 <pre>
-Local File Inclusion Enumerator v1.0 by 0bfxgh0st*
+Local File Inclusion Enumerator v1.0.1 by 0bfxgh0st*
 Usage python3 lfienum &lturl> &ltoption>
 
 Options:
